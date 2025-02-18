@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { themes } from "../shared/constants";
 import { Achievements } from "./game/Achievements";
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 type GameMode = 'time' | 'words' | 'zen';
-type Theme = 'default' | 'neon' | 'retro' | 'dark';
 
 const DIFFICULTY_SETTINGS: Record<Difficulty, GameConfig> = {
   easy: {
@@ -74,7 +72,7 @@ interface PlayerScore {
   date: string;
 }
 
-const TypingGame = ({ onThemeChange }: Props) => {
+const TypingGame = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('easy');
   const [currentWord, setCurrentWord] = useState('');
   const [userInput, setUserInput] = useState('');
@@ -100,7 +98,6 @@ const TypingGame = ({ onThemeChange }: Props) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [wordsLeft, setWordsLeft] = useState(10);
   const [wpm, setWpm] = useState(0);
-  const [theme, setTheme] = useState<Theme>('default');
   const [achievements, setAchievements] = useState<Achievement[]>([
     {
       id: 'speed_demon',
@@ -133,7 +130,6 @@ const TypingGame = ({ onThemeChange }: Props) => {
   });
   const [leaderboard, setLeaderboard] = useState<PlayerScore[]>([]);
   const [playerName, setPlayerName] = useState('');
-  const [showScoreSubmit, setShowScoreSubmit] = useState(false);
   const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
@@ -302,59 +298,6 @@ const TypingGame = ({ onThemeChange }: Props) => {
     { value: 'hard', label: 'Hard (5s)', desc: 'Long Words' },
   ];
 
-  const getWordProgress = (current: string, target: string) => {
-    return target.split('').map((char, i) => {
-      if (!current[i]) return 'pending';
-      return current[i] === char ? 'correct' : 'wrong';
-    });
-  };
-
-  const KeyboardLayout = () => {
-    const layout = [
-      ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-      ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-      ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
-    ];
-
-    return (
-      <div className="mt-6">
-        {layout.map((row, i) => (
-          <div key={i} className="flex justify-center gap-1 my-1">
-            {row.map((key) => (
-              <div
-                key={key}
-                className={`w-8 h-8 flex items-center justify-center rounded
-                  ${currentWord.toLowerCase().includes(key.toLowerCase()) 
-                    ? 'bg-emerald-500/20 text-emerald-400' 
-                    : 'bg-slate-700/30'}`}
-              >
-                {key}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  const submitScore = () => {
-    if (!playerName.trim()) return;
-    
-    const newScore: PlayerScore = {
-      name: playerName,
-      wpm,
-      accuracy,
-      difficulty,
-      date: new Date().toISOString()
-    };
-
-    setLeaderboard(prev => [...prev, newScore]
-      .sort((a, b) => b.wpm - a.wpm)
-      .slice(0, 10)); // Keep only top 10 scores
-    
-    setShowScoreSubmit(false);
-  };
-
   const Progress = () => (
     <div className="w-full h-2 bg-slate-700/30 rounded-full overflow-hidden">
       <div 
@@ -365,11 +308,6 @@ const TypingGame = ({ onThemeChange }: Props) => {
       />
     </div>
   );
-
-  const handleThemeChange = (newTheme: Theme) => {
-    setTheme(newTheme);
-    onThemeChange(newTheme);
-  };
 
   useEffect(() => {
     if (!isPlaying && score > 0) {
@@ -404,14 +342,8 @@ const TypingGame = ({ onThemeChange }: Props) => {
     }
   }, [isPlaying]);
 
-  useEffect(() => {
-    if (!isPlaying && score > 0) {
-      setShowScoreSubmit(true);
-    }
-  }, [isPlaying]);
-
   return (
-    <div className={`max-w-2xl mx-auto p-6 rounded-2xl shadow-2xl border backdrop-blur-sm ${themes[theme].container} flex flex-col gap-4 max-h-screen overflow-y-auto`}>
+    <div className={`max-w-2xl mx-auto p-6 rounded-2xl shadow-2xl border backdrop-blur-sm flex flex-col gap-4 max-h-screen overflow-y-auto`}>
       <h2 className="text-3xl font-bold text-white text-center bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
         Speed Typer
       </h2>
@@ -486,6 +418,15 @@ const TypingGame = ({ onThemeChange }: Props) => {
             </button>
           ))}
         </div>
+
+        <button
+          onClick={() => setIsSoundEnabled(prev => !prev)}
+          className="absolute top-4 right-4 p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 
+            transition-colors duration-200"
+          title={`Sound ${isSoundEnabled ? 'On' : 'Off'}`}
+        >
+          {isSoundEnabled ? '🔊' : '🔇'}
+        </button>
       </div>
 
       <div className="flex-1 min-h-0">
