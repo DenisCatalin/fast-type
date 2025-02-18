@@ -1,10 +1,15 @@
+'use client';
+
 import TypingGame from './components/TypingGame';
+import { useState } from 'react';
+import { themes, type Theme } from './shared/constants';
 
 export default function Home() {
+  const [theme, setTheme] = useState<Theme>('default');
+
   return (
-    <main className="min-h-screen p-8 bg-slate-900 bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-      <TypingGame />
+    <main className={`min-h-screen p-8 ${themes[theme].background}`}>
+      <TypingGame onThemeChange={setTheme} />
     </main>
   );
 }
